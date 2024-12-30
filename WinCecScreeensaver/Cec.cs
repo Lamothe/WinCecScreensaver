@@ -9,14 +9,18 @@ namespace WinCecScreensaver
         private readonly LibCecSharp _libCecSharp;
         private readonly CecAdapter _adapter = null;
 
-        public delegate void CecLogMessageHandler(string message);
-        public event CecLogMessageHandler OnCecLogMessage;
+        public delegate void LogMessageHandler(string message);
+        public event LogMessageHandler OnLogMessage;
+
+        public delegate void CecAlertHandler(CecAlert type);
+        public event CecAlertHandler OnAlert;
 
         public Cec()
         {
             _libCecConfiguration.DeviceTypes.Types[0] = CecDeviceType.RecordingDevice;
             _libCecConfiguration.DeviceName = Environment.MachineName;
             _libCecConfiguration.ClientVersion = LibCECConfiguration.CurrentVersion;
+
             _libCecSharp = new LibCecSharp(this, _libCecConfiguration);
             _libCecSharp.InitVideoStandalone();
             var adapters = _libCecSharp.FindAdapters(string.Empty);
@@ -47,7 +51,7 @@ namespace WinCecScreensaver
 
         public override int ReceiveAlert(CecAlert alert, CecParameter data)
         {
-            OnCecLogMessage?.Invoke($"ALERT: {Enum.GetName(typeof(CecAlert), alert)}{data.Data}");
+            OnAlert?.Invoke(alert);
             return base.ReceiveAlert(alert, data);
         }
 
@@ -55,7 +59,7 @@ namespace WinCecScreensaver
         {
             if ((message.Level & (CecLogLevel.Error | CecLogLevel.Warning | CecLogLevel.Notice)) != 0)
             {
-                OnCecLogMessage?.Invoke($"{Enum.GetName(typeof(CecLogLevel), message.Level).ToUpper()}: {message.Message}");
+                OnLogMessage?.Invoke($"{Enum.GetName(typeof(CecLogLevel), message.Level).ToUpper()}: {message.Message}");
             }
 
             return base.ReceiveLogMessage(message);

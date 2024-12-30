@@ -13,17 +13,6 @@ namespace WinCecScreensaver
         public const int _pbtPowerSettingsChange = 0x8013;
         public bool _hidden = true;
 
-        [StructLayout(LayoutKind.Sequential, Pack = 4)]
-        public struct PowerBroadcastSetting
-        {
-            public Guid PowerSetting;
-            public int DataLength;
-            public int Data;
-        }
-
-        [DllImport("user32.dll", SetLastError = true)]
-        public static extern IntPtr RegisterPowerSettingNotification(IntPtr hRecipient, ref Guid PowerSettingGuid, int Flags);
-
         public delegate void DisplayStateChangedHandler(bool on);
         public DisplayStateChangedHandler OnDisplayStateChanged { get; set; }
 
@@ -75,10 +64,10 @@ namespace WinCecScreensaver
         {
             if (message.Msg == _wmPowerBroadcast && message.WParam.ToInt32() == _pbtPowerSettingsChange)
             {
-                var result = Marshal.PtrToStructure(message.LParam, typeof(PowerBroadcastSetting))
+                var result = Marshal.PtrToStructure(message.LParam, typeof(Win32.PowerBroadcastSetting))
                     ?? throw new Exception("Failed to marshall PowerBroadcastSetting");
 
-                var settings = (PowerBroadcastSetting)result;
+                var settings = (Win32.PowerBroadcastSetting)result;
                 if (settings.PowerSetting == _guidConsoleDisplayState)
                 {
                     switch (settings.Data)

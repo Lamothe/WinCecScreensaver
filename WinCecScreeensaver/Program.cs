@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CecSharp;
+using System;
 using System.IO;
 using System.Windows.Forms;
 using WinCecScreeensaver.Resources;
@@ -45,13 +46,24 @@ namespace WinCecScreensaver
                 Visible = true
             };
 
-            cec.OnCecLogMessage += Log;
+            cec.OnLogMessage += Log;
+            cec.OnAlert += (alert) =>
+            {
+                Log($"ALERT: {Enum.GetName(typeof(CecAlert), alert)}");
+
+                cec.Dispose();
+                cec = new Cec();
+            };
             mainForm.Text = Resource.ApplicationName;
             mainForm.OnDisplayStateChanged += (state) =>
             {
                 Log($"Setting display state to {state}");
                 cec.SetDisplayState(on = state);
             };
+
+            cec.SetDisplayState(true);
+
+            Application.ApplicationExit += (s,e) => cec.SetDisplayState(false);
 
             Application.Run(mainForm);
         }

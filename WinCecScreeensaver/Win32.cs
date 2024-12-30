@@ -10,7 +10,7 @@ namespace WinCecScreensaver
         public const int PbtPowerSettingsChange = 0x8013;
 
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
-        public struct POWERBROADCAST_SETTING
+        public struct PowerBroadcastSetting
         {
             public Guid PowerSetting;
             public int DataLength;
